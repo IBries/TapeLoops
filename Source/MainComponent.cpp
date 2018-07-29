@@ -11,15 +11,12 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
-	tapes = new Tape[NUM_TAPES];
-	for (int i = 0; i < NUM_TAPES; i++)
-	{
-		addAndMakeVisible(&tapes[i]);
-	}
+    // Make sure you set the size of the component after
+    // you add any child components.
     setSize (800, 600);
 
     // specify the number of input and output channels that we want to open
-    setAudioChannels (0, 2);
+    setAudioChannels (2, 2);
 }
 
 MainComponent::~MainComponent()
@@ -42,7 +39,13 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 
 void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
 {
+    // Your audio-processing code goes here!
 
+    // For more details, see the help for AudioProcessor::getNextAudioBlock()
+
+    // Right now we are not producing any data, in which case we need to clear the buffer
+    // (to prevent the output of random noise)
+    bufferToFill.clearActiveBufferRegion();
 }
 
 void MainComponent::releaseResources()
@@ -64,13 +67,7 @@ void MainComponent::paint (Graphics& g)
 
 void MainComponent::resized()
 {
-	for (int i = 0; i < NUM_TAPES; i++)
-	{
-		tapes[i].setBounds(getLocalBounds());
-	}
-}
-
-int MainComponent::getNumTapes()
-{
-	return NUM_TAPES;
+    // This is called when the MainContentComponent is resized.
+    // If you add any child components, this is where you should
+    // update their positions.
 }

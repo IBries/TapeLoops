@@ -9,8 +9,6 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "Tape.h"
-#include "MasterControl.h"
 
 //==============================================================================
 /*
@@ -33,13 +31,10 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
 
-	int getNumTapes();
-	Tape* tapes;
-
 private:
     //==============================================================================
-	static const int NUM_TAPES = 1;
-	MasterControl masterControls;
+    // Your private member variables go here...
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
