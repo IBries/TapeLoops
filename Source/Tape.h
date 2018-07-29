@@ -34,22 +34,18 @@ public:
 	void changeListenerCallback(ChangeBroadcaster* source);
 
 private:
-	enum TransportState
-	{
-		Stopped,
-		Starting,
-		Playing,
-		Stopping
-	};
-	void changeState(TransportState newState);
+	void loadButtonClicked();
+	void thumbnailChanged();
+	void paintIfNoFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds);
+	void paintIfFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds);
 
 	Counter counter;
 	Control control;
+
 	AudioFormatManager formatManager;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AudioTransportSource transportSource;
-	TransportState state;
-
+	AudioThumbnailCache thumbnailCache;
+	AudioThumbnail thumbnail;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Tape)
 };

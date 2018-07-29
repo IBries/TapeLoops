@@ -12,10 +12,12 @@
 #include "Tape.h"
 
 //==============================================================================
-Tape::Tape()
+Tape::Tape() :
+	thumbnailCache(5),
+	thumbnail(512, formatManager, thumbnailCache)
 {
 	formatManager.registerBasicFormats();
-	transportSource.addChangeListener(this);
+	thumbnail.addChangeListener(this);
 
 	addAndMakeVisible(&control);
 	control.connectControls(this, this);
@@ -27,6 +29,12 @@ Tape::~Tape()
 
 void Tape::paint (Graphics& g)
 {
+	Rectangle<int> thumbnailBounds(10, 100, getWidth() - 20, getHeight() - 120);
+
+	if (thumbnail.getNumChannels() == 0)
+		paintIfNoFileLoaded(g, thumbnailBounds);
+	else
+		paintIfFileLoaded(g, thumbnailBounds);
 }
 
 void Tape::resized()
@@ -37,9 +45,7 @@ void Tape::resized()
 void Tape::buttonClicked(Button* button)
 {
 	if (button == &control.loadButton)
-	{
-		//TODO load an audio file
-	}
+		loadButtonClicked();
 	else if (button == &control.playButton)
 	{
 		//TODO play the audio file
@@ -68,41 +74,46 @@ void Tape::sliderValueChanged(Slider* slider)
 
 void Tape::changeListenerCallback(ChangeBroadcaster* source)
 {
-	if (source == &transportSource)
+	if (source == &thumbnail)
+		thumbnailChanged();
+}
+
+void Tape::loadButtonClicked()
+{
+	FileChooser chooser("Select a Wave file to play...", File::nonexistent, "*.wav");
+
+	if (chooser.browseForFileToOpen())
 	{
-		if (transportSource.isPlaying())
-			changeState(Playing);
-		else
-			changeState(Stopped);
+		File file(chooser.getResult());
+		auto* reader = formatManager.createReaderFor(file);
+
+		if (reader != nullptr)
+		{
+			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+			control.playButton.setEnabled(true);
+			thumbnail.setSource(new FileInputSource(file));
+			readerSource.reset(newSource.release());
+		}
 	}
 }
 
-void Tape::changeState(TransportState newState)
+void Tape::thumbnailChanged()
 {
-	if (state != newState)
-	{
-		state = newState;
+	repaint();
+}
 
-		switch (state)
-		{
-			case Stopped:
-				control.stopButton.setEnabled(false);
-				control.playButton.setEnabled(true);
-				transportSource.setPosition(0.0);
-				break;
+void Tape::paintIfNoFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds)
+{
+	g.setColour(Colours::darkgrey);
+	g.fillRect(thumbnailBounds);
+	g.setColour(Colours::white);
+	g.drawFittedText("No File Loaded", thumbnailBounds, Justification::centred, 1.0f);
+}
 
-			case Starting:
-				control.playButton.setEnabled(false);
-				transportSource.start();
-				break;
-
-			case Playing:
-				control.stopButton.setEnabled(true);
-				break;
-
-			case Stopping:
-				transportSource.stop();
-				break;
-		}
-	}
+void Tape::paintIfFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds)
+{
+	g.setColour(Colours::white);
+	g.fillRect(thumbnailBounds);
+	g.setColour(Colours::red);
+	thumbnail.drawChannels(g, thumbnailBounds, 0.0, thumbnail.getTotalLength(), 1.0f);
 }
