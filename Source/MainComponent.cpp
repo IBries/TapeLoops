@@ -11,7 +11,11 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
-	addAndMakeVisible(&tapeLooper);
+	tapes = new Tape[NUM_TAPES];
+	for (int i = 0; i < NUM_TAPES; i++)
+	{
+		addAndMakeVisible(&tapes[i]);
+	}
     setSize (800, 600);
 
     // specify the number of input and output channels that we want to open
@@ -60,5 +64,13 @@ void MainComponent::paint (Graphics& g)
 
 void MainComponent::resized()
 {
-	tapeLooper.setBounds(getLocalBounds());
+	for (int i = 0; i < NUM_TAPES; i++)
+	{
+		tapes[i].setBounds(getLocalBounds());
+	}
+}
+
+int MainComponent::getNumTapes()
+{
+	return NUM_TAPES;
 }
