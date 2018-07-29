@@ -25,13 +25,15 @@ public:
     void resized() override;
 	void connectControls(Button::Listener* newButtonListener, Slider::Listener* newSliderListener);
 
-private:
 	TextButton loadButton;
 	Slider volumeSlider;
 	TextButton playButton;
 	TextButton stopButton;
 	Slider startPointSlider;
 	Slider endPointSlider;
+
+private:
+
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Control)
 };

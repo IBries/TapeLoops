@@ -12,7 +12,6 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Tape.h"
-#include "MasterControl.h"
 
 //==============================================================================
 /*
@@ -26,10 +25,11 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-private:
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TapeLooper)
-		
-	static const int NUM_TAPES = 1;
+	int getNumTapes();
 	Tape* tapes;
-	MasterControl globalControls;
+
+private:	
+	static const int NUM_TAPES = 1;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TapeLooper)
 };

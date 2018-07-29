@@ -36,3 +36,8 @@ void TapeLooper::resized()
 		tapes[i].setBounds(getLocalBounds());
 	}
 }
+
+int TapeLooper::getNumTapes()
+{
+	return NUM_TAPES;
+}

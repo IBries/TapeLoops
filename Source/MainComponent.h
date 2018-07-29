@@ -9,6 +9,8 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "TapeLooper.h"
+#include "MasterControl.h"
 
 //==============================================================================
 /*
@@ -33,8 +35,8 @@ public:
 
 private:
     //==============================================================================
-    // Your private member variables go here...
-
+	TapeLooper tapeLooper;
+	MasterControl masterControls;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

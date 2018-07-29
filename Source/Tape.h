@@ -19,7 +19,8 @@
 */
 class Tape    : public Component,
 				public Button::Listener,
-				public Slider::Listener
+				public Slider::Listener,
+				public ChangeListener
 {
 public:
     Tape();
@@ -30,12 +31,25 @@ public:
 
 	void buttonClicked(Button* button);
 	void sliderValueChanged(Slider* slider);
+	void changeListenerCallback(ChangeBroadcaster* source);
 
 private:
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Tape)
+	enum TransportState
+	{
+		Stopped,
+		Starting,
+		Playing,
+		Stopping
+	};
+	void changeState(TransportState newState);
 
 	Counter counter;
 	Control control;
-	AudioBuffer<float> buffer;
+	AudioFormatManager formatManager;
+	std::unique_ptr<AudioFormatReaderSource> readerSource;
+	AudioTransportSource transportSource;
+	TransportState state;
 
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Tape)
 };
