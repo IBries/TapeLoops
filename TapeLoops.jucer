@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="kOXIK4" name="TapeLoops" projectType="guiapp" jucerVersion="5.3.2">
+  <MAINGROUP id="TgoF7l" name="TapeLoops">
+    <GROUP id="{2D90C347-8EFB-BA93-67DD-A15663A3DF79}" name="Source">
+      <FILE id="RVLqYF" name="Control.cpp" compile="1" resource="0" file="Source/Control.cpp"/>
+      <FILE id="PaCYfL" name="Control.h" compile="0" resource="0" file="Source/Control.h"/>
+      <FILE id="mGC9pP" name="Counter.cpp" compile="1" resource="0" file="Source/Counter.cpp"/>
+      <FILE id="xpAQgo" name="Counter.h" compile="0" resource="0" file="Source/Counter.h"/>
+      <FILE id="Cx8tZ0" name="MasterControl.cpp" compile="1" resource="0"
+            file="Source/MasterControl.cpp"/>
+      <FILE id="WqylFW" name="MasterControl.h" compile="0" resource="0" file="Source/MasterControl.h"/>
+      <FILE id="tcVqsq" name="Tape.cpp" compile="1" resource="0" file="Source/Tape.cpp"/>
+      <FILE id="vPJYZF" name="Tape.h" compile="0" resource="0" file="Source/Tape.h"/>
+      <FILE id="jcglLP" name="TapeLooper.cpp" compile="1" resource="0" file="Source/TapeLooper.cpp"/>
+      <FILE id="iNaHvu" name="TapeLooper.h" compile="0" resource="0" file="Source/TapeLooper.h"/>
+      <FILE id="sGjicY" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="Ub062w" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="LhPvgp" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2017 targetFolder="Builds/VisualStudio2017">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../_Libraries/C++/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../_Libraries/C++/JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2017>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+  </MODULES>
+  <LIVE_SETTINGS>
+    <WINDOWS/>
+  </LIVE_SETTINGS>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
