@@ -248,6 +248,8 @@ void MainComponent::checkForPathToOpen()
 			playButton.setEnabled(true);
 			thumbnail.setSource(new FileInputSource(file));
 			readerSource.reset(newSource.release());
+
+			changeState(Stopping);
 		}
 	}
 }
@@ -287,7 +289,7 @@ void MainComponent::paintIfFileLoaded(Graphics& g, const Rectangle<int>& thumbna
 
 	thumbnail.drawChannels(g, thumbnailBounds, 0.0, audioLength, 1.0f);
 
-	g.setColour(Colours::green);
+	//g.setColour(Colours::green);
 
 	//auto audioPosition(transportSource.getCurrentPosition());
 	//auto drawPosition((audioPosition / audioLength) * thumbnailBounds.getWidth() + thumbnailBounds.getX());
