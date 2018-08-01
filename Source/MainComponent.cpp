@@ -39,7 +39,7 @@ MainComponent::MainComponent() :
 	setSize(600, 400);
 
 	formatManager.registerBasicFormats();
-	transportSource.addChangeListener(this);
+	//transportSource.addChangeListener(this);
 	thumbnail.addChangeListener(this);
 
 	setAudioChannels(0, 2);
@@ -56,7 +56,7 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-	transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+	//transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 //==============================================================================
@@ -121,7 +121,7 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 
 void MainComponent::releaseResources()
 {
-	transportSource.releaseResources();
+	//transportSource.releaseResources();
 }
 
 //==============================================================================
@@ -150,8 +150,8 @@ void MainComponent::resized()
 
 void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
 {
-	if (source == &transportSource)
-		transportSourceChanged();
+	//if (source == &transportSource)
+	//	transportSourceChanged();
 	if (source == &thumbnail)
 		thumbnailChanged();
 }
@@ -167,17 +167,17 @@ void MainComponent::changeState(TransportState newState)
 		switch (state)
 		{
 		case Stopped:
-			stopButton.setEnabled(false);
 			if (currentBuffer == nullptr)
 				playButton.setEnabled(false);
 			else
 				playButton.setEnabled(true);
-			transportSource.setPosition(0.0);
+			//transportSource.setPosition(0.0);
 			break;
 
 		case Starting:
 			playButton.setEnabled(false);
-			transportSource.start();
+			changeState(Playing);
+			//transportSource.start();
 			break;
 
 		case Playing:
@@ -185,7 +185,9 @@ void MainComponent::changeState(TransportState newState)
 			break;
 
 		case Stopping:
-			transportSource.stop();
+			stopButton.setEnabled(false);
+			changeState(Stopped);
+			//transportSource.stop();
 			break;
 		}
 	}
@@ -240,7 +242,7 @@ void MainComponent::checkForPathToOpen()
 
 			// Thumbnail Drawing Stuff
 			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(drawReader, true));
-			transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
+			//transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
 			
 			const MessageManagerLock mmLock;
 			playButton.setEnabled(true);
@@ -254,7 +256,7 @@ void MainComponent::checkForPathToOpen()
 
 void MainComponent::transportSourceChanged()
 {
-	changeState(transportSource.isPlaying() ? Playing : Stopped);
+	//changeState(transportSource.isPlaying() ? Playing : Stopped);
 }
 
 //==============================================================================
@@ -287,10 +289,10 @@ void MainComponent::paintIfFileLoaded(Graphics& g, const Rectangle<int>& thumbna
 
 	g.setColour(Colours::green);
 
-	auto audioPosition(transportSource.getCurrentPosition());
-	auto drawPosition((audioPosition / audioLength) * thumbnailBounds.getWidth() + thumbnailBounds.getX());
+	//auto audioPosition(transportSource.getCurrentPosition());
+	//auto drawPosition((audioPosition / audioLength) * thumbnailBounds.getWidth() + thumbnailBounds.getX());
 
-	g.drawLine(drawPosition, thumbnailBounds.getY(), drawPosition, thumbnailBounds.getBottom(), 2.0f);
+	//g.drawLine(drawPosition, thumbnailBounds.getY(), drawPosition, thumbnailBounds.getBottom(), 2.0f);
 }
 
 //==============================================================================

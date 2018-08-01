@@ -97,7 +97,7 @@ private:
 
 	AudioFormatManager formatManager;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AudioTransportSource transportSource;
+	//AudioTransportSource transportSource;
 	TransportState state;
 	AudioThumbnailCache thumbnailCache;
 	AudioThumbnail thumbnail;
