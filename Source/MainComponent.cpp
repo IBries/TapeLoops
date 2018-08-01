@@ -35,8 +35,9 @@ MainComponent::MainComponent() :
 	addAndMakeVisible(clearButton);
 	clearButton.setButtonText("Clear");
 	clearButton.onClick = [this] { clearButtonClicked(); };
+	clearButton.setEnabled(false);
 
-	setSize(600, 400);
+	setSize(800, 230);
 
 	formatManager.registerBasicFormats();
 	//transportSource.addChangeListener(this);
@@ -128,7 +129,7 @@ void MainComponent::releaseResources()
 
 void MainComponent::paint (Graphics& g)
 {
-	Rectangle<int> thumbnailBounds(10, 100, getWidth() - 20, getHeight() - 120);
+	Rectangle<int> thumbnailBounds(border, border, getWidth() - 4 * border - 2 * buttonWidth, getHeight()- 2 * border);
 
 	if (thumbnail.getNumChannels() == 0)
 		paintIfNoFileLoaded(g, thumbnailBounds);
@@ -140,10 +141,15 @@ void MainComponent::paint (Graphics& g)
 
 void MainComponent::resized()
 {
-	openButton.setBounds(10, 10, getWidth() - 20, 20);
-	playButton.setBounds(10, 40, getWidth() - 20, 20);
-	stopButton.setBounds(10, 70, getWidth() - 20, 20);
-	clearButton.setBounds(10, 100, getWidth() - 20, 20);
+	openButton.setBounds(3 * border + getThumbnailWidth() + buttonWidth, border, buttonWidth, buttonWidth);
+	playButton.setBounds(2 * border + getThumbnailWidth(), border, buttonWidth, buttonWidth);
+	stopButton.setBounds(2 * border + getThumbnailWidth(), 2*border + buttonWidth, buttonWidth, buttonWidth);
+	clearButton.setBounds(3 * border + getThumbnailWidth() + buttonWidth, 2*border + buttonWidth, buttonWidth, buttonWidth);
+}
+
+int MainComponent::getThumbnailWidth()
+{
+	return getWidth() - 4 * border - 2 * buttonWidth;
 }
 
 //==============================================================================
@@ -246,6 +252,7 @@ void MainComponent::checkForPathToOpen()
 			
 			const MessageManagerLock mmLock;
 			playButton.setEnabled(true);
+			clearButton.setEnabled(true);
 			thumbnail.setSource(new FileInputSource(file));
 			readerSource.reset(newSource.release());
 
@@ -340,6 +347,7 @@ void MainComponent::clearButtonClicked()
 	changeState(Stopping);
 	playButton.setEnabled(false);
 	stopButton.setEnabled(false);
+	clearButton.setEnabled(false);
 	currentBuffer = nullptr;
 	thumbnail.clear();
 }

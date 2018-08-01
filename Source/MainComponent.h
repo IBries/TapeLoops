@@ -88,12 +88,17 @@ private:
 	void stopButtonClicked();
 	void clearButtonClicked();
 
+	int getThumbnailWidth();
+
 
 	//==============================================================================
 	TextButton openButton;
 	TextButton playButton;
 	TextButton stopButton;
 	TextButton clearButton;
+
+	int border = 10;
+	int buttonWidth = 100;
 
 	AudioFormatManager formatManager;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
