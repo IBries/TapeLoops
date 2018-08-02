@@ -15,7 +15,9 @@
 Thumbnail::Thumbnail(int sourceSamplesPerThumbnailSample,
 					 AudioFormatManager& formatManager,
 					 AudioThumbnailCache& cache)
-	: thumbnail(sourceSamplesPerThumbnailSample, formatManager, cache)
+	: thumbnail(sourceSamplesPerThumbnailSample, formatManager, cache),
+	  backgroundColour(189, 92, 11),
+	  foregroundColour(0, 61, 64)
 {
 	thumbnail.addChangeListener(this);
 
@@ -33,22 +35,30 @@ void Thumbnail::setFile(const File& file)
 void Thumbnail::paint (Graphics& g)
 {
 	if (thumbnail.getNumChannels() == 0)
-		paintIfNoFileLoaded(g);
+		if (isLoadingFile)
+			setMessage(g, "Loading File...");
+		else
+			setMessage(g, "No File Loaded");
 	else
 		paintIfFileLoaded(g);
 }
 
-void Thumbnail::paintIfNoFileLoaded(Graphics& g)
+void Thumbnail::setMessage(Graphics& g, String message)
 {
-	g.fillAll(Colours::white);
-	g.setColour(Colours::darkgrey);
-	g.drawFittedText("No File Loaded", getLocalBounds(), Justification::centred, 1.0f);
+	g.fillAll(backgroundColour);
+	g.setColour(foregroundColour);
+	g.drawFittedText(message, getLocalBounds(), Justification::centred, 1.0f);
+}
+
+void Thumbnail::isLoading(bool loading)
+{
+	isLoadingFile = loading;
 }
 
 void Thumbnail::paintIfFileLoaded(Graphics& g)
 {
-	g.fillAll(Colours::white);
-	g.setColour(Colours::red);
+	g.fillAll(backgroundColour);
+	g.setColour(foregroundColour);
 	thumbnail.drawChannels(g, getLocalBounds(), 0.0, thumbnail.getTotalLength(), 1.0f);
 }
 

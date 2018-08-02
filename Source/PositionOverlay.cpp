@@ -14,7 +14,7 @@
 //==============================================================================
 PositionOverlay::PositionOverlay()
 {
-	startTimer(40);
+	startTimer(redrawDelayInMilliSeconds);
 }
 
 PositionOverlay::~PositionOverlay()
@@ -25,11 +25,9 @@ void PositionOverlay::paint (Graphics& g)
 {
 	if (lengthInSamples > 0.0)
 	{
-		//if (position > 0.0)
-		//	int test = 0;
 		auto drawPosition = (position / lengthInSamples) * getWidth();
 
-		g.setColour(Colours::green);
+		g.setColour(Colour(0, 49, 3));
 		g.drawLine(drawPosition, 0.0f, drawPosition, (float)getHeight(), 2.0f);
 	}
 }

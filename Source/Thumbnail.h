@@ -25,9 +25,11 @@ public:
     ~Thumbnail();
 
 	void setFile(const File& file);
+	void setMessage(Graphics& g, String Message);
+
+	void isLoading(bool loading);
 
     void paint (Graphics&) override;
-	void paintIfNoFileLoaded(Graphics& g);
 	void paintIfFileLoaded(Graphics& g);
 	void changeListenerCallback(ChangeBroadcaster* source);
     void resized() override;
@@ -35,7 +37,10 @@ public:
 private:
 	void thumbnailChanged();
 
+	bool isLoadingFile = false;
 	AudioThumbnail thumbnail;
+	Colour backgroundColour;
+	Colour foregroundColour;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Thumbnail)
 };

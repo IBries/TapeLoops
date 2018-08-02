@@ -35,6 +35,7 @@ public:
 private:
 	float position = 0.0;
 	float lengthInSamples = 0.0;
+	int redrawDelayInMilliSeconds = 40;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PositionOverlay)
 };

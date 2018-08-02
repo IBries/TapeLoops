@@ -23,13 +23,13 @@ MainComponent::MainComponent() :
 	addAndMakeVisible(playButton);
 	playButton.setButtonText("Play");
 	playButton.onClick = [this] { playButtonClicked(); };
-	playButton.setColour(TextButton::buttonColourId, Colours::green);
+	playButton.setColour(TextButton::buttonColourId, Colour(0, 83, 5));
 	playButton.setEnabled(false);
 
 	addAndMakeVisible(stopButton);
 	stopButton.setButtonText("Stop");
 	stopButton.onClick = [this] { stopButtonClicked(); };
-	stopButton.setColour(TextButton::buttonColourId, Colours::red);
+	stopButton.setColour(TextButton::buttonColourId, Colour(105, 3, 0));
 	stopButton.setEnabled(false);
 
 	addAndMakeVisible(clearButton);
@@ -128,6 +128,7 @@ void MainComponent::releaseResources()
 
 void MainComponent::paint (Graphics& g)
 {
+	g.fillAll(Colour(62, 29, 0));
 }
 
 //==============================================================================
@@ -222,6 +223,9 @@ void MainComponent::checkForPathToOpen()
 
 		if (auto* reader = formatManager.createReaderFor(file))
 		{
+			currentBuffer = nullptr;
+			thumbnail.isLoading(true);
+
 			ReferenceCountedBuffer::Ptr newBuffer = new ReferenceCountedBuffer(reader->numChannels, (int)reader->lengthInSamples);
 			reader->read(newBuffer->getAudioSampleBuffer(), 0, (int)reader->lengthInSamples, 0, true, true);
 			currentBuffer = newBuffer;
@@ -234,6 +238,7 @@ void MainComponent::checkForPathToOpen()
 			const MessageManagerLock mmLock;
 			playButton.setEnabled(true);
 			clearButton.setEnabled(true);
+			thumbnail.isLoading(false);
 			thumbnail.setFile(file);
 			readerSource.reset(newSource.release());
 
