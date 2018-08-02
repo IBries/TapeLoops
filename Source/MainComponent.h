@@ -9,12 +9,12 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "Thumbnail.h"
+#include "PositionOverlay.h"
 
 //==============================================================================
-class MainComponent   : public AudioAppComponent,
-						public ChangeListener,
-						private Timer,
-						private Thread
+class MainComponent : public AudioAppComponent,
+					  private Thread
 {
 public:
 	class ReferenceCountedBuffer : public ReferenceCountedObject
@@ -56,9 +56,6 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
 
-	//==============================================================================
-	void changeListenerCallback(ChangeBroadcaster* source) override;
-
 private:
     //==============================================================================
 	enum TransportState
@@ -73,15 +70,6 @@ private:
 	void run() override;
 	void checkForBuffersToFree();
 	void checkForPathToOpen();
-	void resetPlayPosition(const AudioSourceChannelInfo& bufferToFill, int& offsetSamples, int& offsetSamplesRemaining);
-
-	void transportSourceChanged();
-	void thumbnailChanged();
-
-	void paintIfNoFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds);
-	void paintIfFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds);
-
-	void timerCallback() override;
 
 	void openButtonClicked();
 	void playButtonClicked();
@@ -102,10 +90,10 @@ private:
 
 	AudioFormatManager formatManager;
 	std::unique_ptr<AudioFormatReaderSource> readerSource;
-	//AudioTransportSource transportSource;
 	TransportState state;
 	AudioThumbnailCache thumbnailCache;
-	AudioThumbnail thumbnail;
+	Thumbnail thumbnail;
+	PositionOverlay positionOverlay;
 
 	ReferenceCountedArray<ReferenceCountedBuffer> buffers;
 	ReferenceCountedBuffer::Ptr currentBuffer;

@@ -3,6 +3,12 @@
 <JUCERPROJECT id="DMx7Jf" name="TapeLoops" projectType="guiapp" jucerVersion="5.3.2">
   <MAINGROUP id="vDXPgk" name="TapeLoops">
     <GROUP id="{6DB3EC0E-E045-84F7-0CDA-FEB50B554A50}" name="Source">
+      <FILE id="Kl0fck" name="PositionOverlay.cpp" compile="1" resource="0"
+            file="Source/PositionOverlay.cpp"/>
+      <FILE id="zrAyDJ" name="PositionOverlay.h" compile="0" resource="0"
+            file="Source/PositionOverlay.h"/>
+      <FILE id="chnQVz" name="Thumbnail.cpp" compile="1" resource="0" file="Source/Thumbnail.cpp"/>
+      <FILE id="ovrNJX" name="Thumbnail.h" compile="0" resource="0" file="Source/Thumbnail.h"/>
       <FILE id="w0KeMp" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="EpBZob" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>

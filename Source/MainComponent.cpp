@@ -37,15 +37,15 @@ MainComponent::MainComponent() :
 	clearButton.onClick = [this] { clearButtonClicked(); };
 	clearButton.setEnabled(false);
 
+	addAndMakeVisible(&thumbnail);
+	addAndMakeVisible(&positionOverlay);
+
 	setSize(800, 230);
 
 	formatManager.registerBasicFormats();
-	//transportSource.addChangeListener(this);
-	thumbnail.addChangeListener(this);
 
 	setAudioChannels(0, 2);
 	startThread();
-	startTimer(40);
 }
 
 MainComponent::~MainComponent()
@@ -57,7 +57,6 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-	//transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 //==============================================================================
@@ -115,6 +114,7 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 		}
 	
 		retainedCurrentBuffer->position = position;
+		positionOverlay.setPosition(position);
 	}
 }
 
@@ -122,19 +122,12 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 
 void MainComponent::releaseResources()
 {
-	//transportSource.releaseResources();
 }
 
 //==============================================================================
 
 void MainComponent::paint (Graphics& g)
 {
-	Rectangle<int> thumbnailBounds(border, border, getWidth() - 4 * border - 2 * buttonWidth, getHeight()- 2 * border);
-
-	if (thumbnail.getNumChannels() == 0)
-		paintIfNoFileLoaded(g, thumbnailBounds);
-	else
-		paintIfFileLoaded(g, thumbnailBounds);
 }
 
 //==============================================================================
@@ -145,21 +138,15 @@ void MainComponent::resized()
 	playButton.setBounds(2 * border + getThumbnailWidth(), border, buttonWidth, buttonWidth);
 	stopButton.setBounds(2 * border + getThumbnailWidth(), 2*border + buttonWidth, buttonWidth, buttonWidth);
 	clearButton.setBounds(3 * border + getThumbnailWidth() + buttonWidth, 2*border + buttonWidth, buttonWidth, buttonWidth);
+
+	Rectangle<int> thumbnailBounds(border, border, getWidth() - 4 * border - 2 * buttonWidth, getHeight() - 2 * border);
+	thumbnail.setBounds(thumbnailBounds);
+	positionOverlay.setBounds(thumbnailBounds);
 }
 
 int MainComponent::getThumbnailWidth()
 {
 	return getWidth() - 4 * border - 2 * buttonWidth;
-}
-
-//==============================================================================
-
-void MainComponent::changeListenerCallback(ChangeBroadcaster* source)
-{
-	//if (source == &transportSource)
-	//	transportSourceChanged();
-	if (source == &thumbnail)
-		thumbnailChanged();
 }
 
 //==============================================================================
@@ -177,13 +164,11 @@ void MainComponent::changeState(TransportState newState)
 				playButton.setEnabled(false);
 			else
 				playButton.setEnabled(true);
-			//transportSource.setPosition(0.0);
 			break;
 
 		case Starting:
 			playButton.setEnabled(false);
 			changeState(Playing);
-			//transportSource.start();
 			break;
 
 		case Playing:
@@ -192,8 +177,8 @@ void MainComponent::changeState(TransportState newState)
 
 		case Stopping:
 			stopButton.setEnabled(false);
+			positionOverlay.setPosition(0);
 			changeState(Stopped);
-			//transportSource.stop();
 			break;
 		}
 	}
@@ -234,26 +219,22 @@ void MainComponent::checkForPathToOpen()
 	if (pathToOpen.isNotEmpty())
 	{
 		File file(pathToOpen);
-		std::unique_ptr<AudioFormatReader> reader(formatManager.createReaderFor(file));
-		auto* drawReader = formatManager.createReaderFor(file);
 
-		if (reader.get() != nullptr)
+		if (auto* reader = formatManager.createReaderFor(file))
 		{
-			auto duration = reader->lengthInSamples / reader->sampleRate;
-
 			ReferenceCountedBuffer::Ptr newBuffer = new ReferenceCountedBuffer(reader->numChannels, (int)reader->lengthInSamples);
 			reader->read(newBuffer->getAudioSampleBuffer(), 0, (int)reader->lengthInSamples, 0, true, true);
 			currentBuffer = newBuffer;
 			buffers.add(newBuffer);
 
-			// Thumbnail Drawing Stuff
-			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(drawReader, true));
-			//transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
-			
+			// Drawing Stuff
+			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+			positionOverlay.setLengthInSamples((int) reader->lengthInSamples);
+
 			const MessageManagerLock mmLock;
 			playButton.setEnabled(true);
 			clearButton.setEnabled(true);
-			thumbnail.setSource(new FileInputSource(file));
+			thumbnail.setFile(file);
 			readerSource.reset(newSource.release());
 
 			changeState(Stopping);
@@ -263,59 +244,9 @@ void MainComponent::checkForPathToOpen()
 
 //==============================================================================
 
-void MainComponent::transportSourceChanged()
-{
-	//changeState(transportSource.isPlaying() ? Playing : Stopped);
-}
-
-//==============================================================================
-
-void  MainComponent::thumbnailChanged()
-{
-	repaint();
-}
-
-//==============================================================================
-
-void MainComponent::paintIfNoFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds)
-{
-	g.setColour(Colours::darkgrey);
-	g.fillRect(thumbnailBounds);
-	g.setColour(Colours::white);
-	g.drawFittedText("No File Loaded:", thumbnailBounds, Justification::centred, 1.0f);
-}
-
-//==============================================================================
-
-void MainComponent::paintIfFileLoaded(Graphics& g, const Rectangle<int>& thumbnailBounds) {
-	g.setColour(Colours::white);
-	g.fillRect(thumbnailBounds);
-	g.setColour(Colours::red);
-
-	auto audioLength(thumbnail.getTotalLength());
-
-	thumbnail.drawChannels(g, thumbnailBounds, 0.0, audioLength, 1.0f);
-
-	//g.setColour(Colours::green);
-
-	//auto audioPosition(transportSource.getCurrentPosition());
-	//auto drawPosition((audioPosition / audioLength) * thumbnailBounds.getWidth() + thumbnailBounds.getX());
-
-	//g.drawLine(drawPosition, thumbnailBounds.getY(), drawPosition, thumbnailBounds.getBottom(), 2.0f);
-}
-
-//==============================================================================
-
-void MainComponent::timerCallback()
-{
-	repaint();
-}
-
-//==============================================================================
-
 void MainComponent::openButtonClicked()
 {
-	FileChooser chooser("Select a Wave file to play...", File::nonexistent, "*.wav");
+	FileChooser chooser("Select a Wave file to play...", File(), "*.wav");
 
 	if (chooser.browseForFileToOpen())
 	{
@@ -349,5 +280,5 @@ void MainComponent::clearButtonClicked()
 	stopButton.setEnabled(false);
 	clearButton.setEnabled(false);
 	currentBuffer = nullptr;
-	thumbnail.clear();
+	thumbnail.setFile(File());
 }
