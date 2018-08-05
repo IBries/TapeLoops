@@ -11,6 +11,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Thumbnail.h"
 #include "PositionOverlay.h"
+#include "LoopBounds.h"
 
 //==============================================================================
 class MainComponent : public AudioAppComponent,
@@ -84,6 +85,8 @@ private:
 	TextButton playButton;
 	TextButton stopButton;
 	TextButton clearButton;
+	Slider startSampleSlider;
+	Slider endSampleSlider;
 
 	int border = 10;
 	int buttonWidth = 100;
@@ -94,6 +97,7 @@ private:
 	AudioThumbnailCache thumbnailCache;
 	Thumbnail thumbnail;
 	PositionOverlay positionOverlay;
+	LoopBounds loopBounds;
 
 	ReferenceCountedArray<ReferenceCountedBuffer> buffers;
 	ReferenceCountedBuffer::Ptr currentBuffer;

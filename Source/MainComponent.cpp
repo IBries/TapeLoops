@@ -10,10 +10,11 @@
 
 //==============================================================================
 
-MainComponent::MainComponent() : 
+MainComponent::MainComponent() :
 	state(Stopped),
 	thumbnailCache(5),
 	thumbnail(512, formatManager, thumbnailCache),
+	loopBounds(startSampleSlider, endSampleSlider),
 	Thread("Background Thread")
 {
 	addAndMakeVisible(openButton);
@@ -37,10 +38,21 @@ MainComponent::MainComponent() :
 	clearButton.onClick = [this] { clearButtonClicked(); };
 	clearButton.setEnabled(false);
 
+	addAndMakeVisible(startSampleSlider);
+	startSampleSlider.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	startSampleSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+	startSampleSlider.addListener(&loopBounds);
+
+	addAndMakeVisible(endSampleSlider);
+	endSampleSlider.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	endSampleSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+	endSampleSlider.addListener(&loopBounds);
+
 	addAndMakeVisible(&thumbnail);
 	addAndMakeVisible(&positionOverlay);
+	addAndMakeVisible(&loopBounds);
 
-	setSize(800, 230);
+	setSize(800, 340);
 
 	formatManager.registerBasicFormats();
 
@@ -68,14 +80,14 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 
 	if (state != Playing && retainedCurrentBuffer != nullptr)
 	{
-		position = 0;
+		position = startSampleSlider.getValue();
 		retainedCurrentBuffer->position = position;
 		bufferToFill.clearActiveBufferRegion();
 		return;
 	}
 	else if (retainedCurrentBuffer == nullptr)
 	{
-		position = 0;
+		position = startSampleSlider.getValue();
 		bufferToFill.clearActiveBufferRegion();
 		return;
 	}
@@ -109,8 +121,8 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 			outputSamplesOffset += samplesThisTime;
 			position += samplesThisTime;
 
-			if (position == currentAudioSampleBuffer->getNumSamples())
-				position = 0;
+			if (position >= endSampleSlider.getValue())
+				position = startSampleSlider.getValue();
 		}
 	
 		retainedCurrentBuffer->position = position;
@@ -139,9 +151,12 @@ void MainComponent::resized()
 	playButton.setBounds(2 * border + getThumbnailWidth(), border, buttonWidth, buttonWidth);
 	stopButton.setBounds(2 * border + getThumbnailWidth(), 2*border + buttonWidth, buttonWidth, buttonWidth);
 	clearButton.setBounds(3 * border + getThumbnailWidth() + buttonWidth, 2*border + buttonWidth, buttonWidth, buttonWidth);
+	startSampleSlider.setBounds(2 * border + getThumbnailWidth(), 3 * border + 2 * buttonWidth, buttonWidth, buttonWidth);
+	endSampleSlider.setBounds(3 * border + getThumbnailWidth() + buttonWidth, 3 * border + 2 * buttonWidth, buttonWidth, buttonWidth);
 
 	Rectangle<int> thumbnailBounds(border, border, getWidth() - 4 * border - 2 * buttonWidth, getHeight() - 2 * border);
 	thumbnail.setBounds(thumbnailBounds);
+	loopBounds.setBounds(thumbnailBounds);
 	positionOverlay.setBounds(thumbnailBounds);
 }
 
@@ -233,11 +248,17 @@ void MainComponent::checkForPathToOpen()
 
 			// Drawing Stuff
 			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
-			positionOverlay.setLengthInSamples((int) reader->lengthInSamples);
+			int lengthInSamples = (int)reader->lengthInSamples;
+			positionOverlay.setLengthInSamples(lengthInSamples);
+			loopBounds.setMaxLength(lengthInSamples);
 
 			const MessageManagerLock mmLock;
 			playButton.setEnabled(true);
 			clearButton.setEnabled(true);
+			startSampleSlider.setRange(0, lengthInSamples - 1);
+			endSampleSlider.setRange(1, lengthInSamples);
+			startSampleSlider.setValue(0);
+			endSampleSlider.setValue(lengthInSamples);
 			thumbnail.isLoading(false);
 			thumbnail.setFile(file);
 			readerSource.reset(newSource.release());
