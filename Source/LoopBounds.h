@@ -24,6 +24,7 @@ public:
 
     void paint (Graphics&) override;
     void resized() override;
+	void clear();
 
 	void sliderValueChanged(Slider* slider);
 	void setMaxLength(int lengthInSamples);

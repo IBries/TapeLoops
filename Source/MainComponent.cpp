@@ -42,11 +42,13 @@ MainComponent::MainComponent() :
 	startSampleSlider.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
 	startSampleSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
 	startSampleSlider.addListener(&loopBounds);
+	startSampleSlider.addListener(this);
 
 	addAndMakeVisible(endSampleSlider);
 	endSampleSlider.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
 	endSampleSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
 	endSampleSlider.addListener(&loopBounds);
+	endSampleSlider.addListener(this);
 
 	addAndMakeVisible(&thumbnail);
 	addAndMakeVisible(&positionOverlay);
@@ -76,6 +78,8 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill)
 {
 	ReferenceCountedBuffer::Ptr retainedCurrentBuffer(currentBuffer);
+	ReferenceCountedBuffer::Ptr retainedFadeBuffer(currentFadeBuffer);
+
 	int position;
 
 	if (state != Playing && retainedCurrentBuffer != nullptr)
@@ -94,6 +98,8 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 	else
 	{
 		auto* currentAudioSampleBuffer = retainedCurrentBuffer->getAudioSampleBuffer();
+		auto* currentFadeSampleBuffer = retainedFadeBuffer->getAudioSampleBuffer();
+
 		position = retainedCurrentBuffer->position;
 
 		auto numInputChannels = currentAudioSampleBuffer->getNumChannels();
@@ -104,30 +110,66 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 
 		while (outputSamplesRemaining > 0)
 		{
+			if (startSampleSlider.getValue() >= position)
+				position = startSampleSlider.getValue();
+
 			auto bufferSamplesRemaining = currentAudioSampleBuffer->getNumSamples() - position;
 			auto samplesThisTime = jmin(outputSamplesRemaining, bufferSamplesRemaining);
 
 			for (auto channel = 0; channel < numOutputChannels; ++channel)
 			{
-				bufferToFill.buffer->copyFrom(channel,
-				bufferToFill.startSample + outputSamplesOffset,
-				*currentAudioSampleBuffer,
-				channel % numInputChannels,
-				position,
-				samplesThisTime);
+				if (nearEnd(position))
+				{
+					// read from buffer with fades
+					bufferToFill.buffer->copyFrom(channel,
+						bufferToFill.startSample + outputSamplesOffset,
+						*currentFadeSampleBuffer,
+						channel % numInputChannels,
+						position,
+						samplesThisTime);
+				}
+				else
+				{
+					bufferToFill.buffer->copyFrom(channel,
+						bufferToFill.startSample + outputSamplesOffset,
+						*currentAudioSampleBuffer,
+						channel % numInputChannels,
+						position,
+						samplesThisTime);
+				}
 			}
-
 			outputSamplesRemaining -= samplesThisTime;
 			outputSamplesOffset += samplesThisTime;
 			position += samplesThisTime;
 
 			if (position >= endSampleSlider.getValue())
-				position = startSampleSlider.getValue();
+				position = startSampleSlider.getValue() + loopFadeLengthInSamples;
 		}
-	
+
 		retainedCurrentBuffer->position = position;
+		retainedFadeBuffer->position = position;
 		positionOverlay.setPosition(position);
 	}
+}
+
+bool MainComponent::nearBeginning(int position)
+{
+	if (position <= startSampleSlider.getValue() + (loopFadeLengthInSamples / 2))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool MainComponent::nearEnd(int position)
+{
+	if (position >= endSampleSlider.getValue() - (loopFadeLengthInSamples / 2))
+	{
+		return true;
+	}
+
+	return false;
 }
 
 //==============================================================================
@@ -223,6 +265,14 @@ void MainComponent::checkForBuffersToFree()
 		if (buffer->getReferenceCount() == 2)
 			buffers.remove(i);
 	}
+
+	for (auto i = fadeBuffers.size(); --i >= 0;)
+	{
+		ReferenceCountedBuffer::Ptr fadeBuffer(fadeBuffers.getUnchecked(i));
+
+		if (fadeBuffer->getReferenceCount() == 2)
+			fadeBuffers.remove(i);
+	}
 }
 
 //==============================================================================
@@ -235,19 +285,27 @@ void MainComponent::checkForPathToOpen()
 	if (pathToOpen.isNotEmpty())
 	{
 		File file(pathToOpen);
+		std::unique_ptr<AudioFormatReader> reader(formatManager.createReaderFor(file));
 
-		if (auto* reader = formatManager.createReaderFor(file))
+		if (reader.get() != nullptr)
 		{
 			currentBuffer = nullptr;
 			thumbnail.isLoading(true);
 
 			ReferenceCountedBuffer::Ptr newBuffer = new ReferenceCountedBuffer(reader->numChannels, (int)reader->lengthInSamples);
 			reader->read(newBuffer->getAudioSampleBuffer(), 0, (int)reader->lengthInSamples, 0, true, true);
+
+			ReferenceCountedBuffer::Ptr newFadeBuffer = new ReferenceCountedBuffer(reader->numChannels, (int)reader->lengthInSamples);
+			reader->read(newFadeBuffer->getAudioSampleBuffer(), 0, (int)reader->lengthInSamples, 0, true, (int)reader->lengthInSamples);
+
 			currentBuffer = newBuffer;
+			currentFadeBuffer = newFadeBuffer;
+
 			buffers.add(newBuffer);
+			fadeBuffers.add(newFadeBuffer);
 
 			// Drawing Stuff
-			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
+			std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader.get(), true));
 			int lengthInSamples = (int)reader->lengthInSamples;
 			positionOverlay.setLengthInSamples(lengthInSamples);
 			loopBounds.setMaxLength(lengthInSamples);
@@ -257,6 +315,7 @@ void MainComponent::checkForPathToOpen()
 			clearButton.setEnabled(true);
 			startSampleSlider.setRange(0, lengthInSamples - 1);
 			endSampleSlider.setRange(1, lengthInSamples);
+			startSampleSlider.setValue(1);
 			startSampleSlider.setValue(0);
 			endSampleSlider.setValue(lengthInSamples);
 			thumbnail.isLoading(false);
@@ -264,6 +323,28 @@ void MainComponent::checkForPathToOpen()
 			readerSource.reset(newSource.release());
 
 			changeState(Stopping);
+		}
+	}
+}
+
+void MainComponent::sliderValueChanged(Slider* slider)
+{
+	if (slider == &startSampleSlider || slider == &endSampleSlider)
+	{
+		for (int channel = 0; channel < currentFadeBuffer->getAudioSampleBuffer()->getNumChannels(); channel++)
+		{
+			auto* bufferToFade = currentFadeBuffer->getAudioSampleBuffer();
+
+			bufferToFade->applyGainRamp(endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples, 1.0f, 0.0f);
+
+			for (int channel = 0; channel < bufferToFade->getNumChannels(); channel++)
+			{
+				AudioBuffer<float> fadeIn(2, loopFadeLengthInSamples);
+				fadeIn.copyFrom(channel, 0, *(currentBuffer->getAudioSampleBuffer()), channel, (int)endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples);
+				auto* fadeInPtr = fadeIn.getWritePointer(channel);
+
+				bufferToFade->addFromWithRamp(channel, endSampleSlider.getValue() - loopFadeLengthInSamples, fadeInPtr, loopFadeLengthInSamples, 0.0f, 1.0f);
+			}
 		}
 	}
 }
@@ -307,4 +388,5 @@ void MainComponent::clearButtonClicked()
 	clearButton.setEnabled(false);
 	currentBuffer = nullptr;
 	thumbnail.setFile(File());
+	loopBounds.clear();
 }

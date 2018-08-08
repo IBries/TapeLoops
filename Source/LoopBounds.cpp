@@ -24,14 +24,22 @@ LoopBounds::~LoopBounds()
 
 void LoopBounds::paint (Graphics& g)
 {
-
-	drawFill(g);
 	drawLoopStartIndicator(g);
 	drawLoopEndIndicator(g);
+	drawFill(g);
 }
 
 void LoopBounds::resized()
 {
+}
+
+void LoopBounds::clear()
+{
+	startSampleSlider->setValue(0);
+	endSampleSlider->setValue(getWidth());
+	startDrawPosition = 0;
+	endDrawPosition = getWidth();
+	repaint();
 }
 
 void LoopBounds::sliderValueChanged(Slider* slider)
@@ -73,6 +81,8 @@ void LoopBounds::drawLoopStartIndicator(Graphics& g)
 void LoopBounds::drawLoopEndIndicator(Graphics& g)
 {
 	g.setColour(Colours::darkblue);
+	if (endDrawPosition >= getWidth() - 1)
+		endDrawPosition = getWidth() - 2;
 	g.fillRect(endDrawPosition, 0.0f, 2.0f, (float)getHeight());
 }
 

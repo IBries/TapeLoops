@@ -15,7 +15,8 @@
 
 //==============================================================================
 class MainComponent : public AudioAppComponent,
-					  private Thread
+					  private Thread,
+					  public Slider::Listener
 {
 public:
 	class ReferenceCountedBuffer : public ReferenceCountedObject
@@ -57,6 +58,8 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
 
+	void sliderValueChanged(Slider* slider);
+
 private:
     //==============================================================================
 	enum TransportState
@@ -78,6 +81,9 @@ private:
 	void clearButtonClicked();
 
 	int getThumbnailWidth();
+
+	bool nearEnd(int position);
+	bool nearBeginning(int position);
 
 
 	//==============================================================================
@@ -102,6 +108,10 @@ private:
 	ReferenceCountedArray<ReferenceCountedBuffer> buffers;
 	ReferenceCountedBuffer::Ptr currentBuffer;
 	String chosenPath;
+
+	ReferenceCountedArray<ReferenceCountedBuffer> fadeBuffers;
+	ReferenceCountedBuffer::Ptr currentFadeBuffer;
+	int loopFadeLengthInSamples = 8820;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
