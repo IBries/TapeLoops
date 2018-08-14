@@ -95,7 +95,8 @@ private:
 	int buttonWidth = 100;
 
 	AudioFormatManager formatManager;
-	std::unique_ptr<AudioFormatReaderSource> readerSource;
+	//std::unique_ptr<AudioFormatReaderSource> readerSource;
+	AudioFormatReaderSource* readerSource;
 	TransportState state;
 	AudioThumbnailCache thumbnailCache;
 	Thumbnail thumbnail;
