@@ -20,7 +20,7 @@ MainComponent::MainComponent()
 		addAndMakeVisible(&tapeDecks[tape]);
 	}
 
-	setSize(800, 340 * NUM_TAPES);
+	setSize(800, TAPE_HEIGHT * NUM_TAPES);
 	setAudioChannels(0, 2);
 }
 
@@ -72,6 +72,6 @@ void MainComponent::resized()
 {
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		tapeDecks[tape].setBounds(0, tape * 340, 800, 340);
+		tapeDecks[tape].setBounds(0, tape * TAPE_HEIGHT, getWidth(), TAPE_HEIGHT);
 	}
 }

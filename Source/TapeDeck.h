@@ -91,8 +91,9 @@ private:
 	Slider startSampleSlider;
 	Slider endSampleSlider;
 
-	int border = 10;
-	int buttonWidth = 100;
+	const int BORDER = 10;
+	const int BUTTON_WIDTH = 100;
+	const int BUTTON_HEIGHT = 70;
 
 	AudioFormatManager formatManager;
 	//std::unique_ptr<AudioFormatReaderSource> readerSource;

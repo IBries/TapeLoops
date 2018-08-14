@@ -79,12 +79,12 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 
 	if (retainedCurrentBuffer == nullptr)
 	{
-		position = startSampleSlider.getValue();
+		position = (int) startSampleSlider.getValue();
 		return;
 	}
 	else if (state != Playing)
 	{
-		position = startSampleSlider.getValue();
+		position = (int) startSampleSlider.getValue();
 		retainedCurrentBuffer->position = position;
 		return;
 	}
@@ -104,7 +104,7 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 		while (outputSamplesRemaining > 0)
 		{
 			if (startSampleSlider.getValue() >= position)
-				position = startSampleSlider.getValue();
+				position = (int) startSampleSlider.getValue();
 
 			auto bufferSamplesRemaining = currentAudioSampleBuffer->getNumSamples() - position;
 			auto samplesThisTime = jmin(outputSamplesRemaining, bufferSamplesRemaining);
@@ -136,7 +136,7 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 			position += samplesThisTime;
 
 			if (position >= endSampleSlider.getValue())
-				position = startSampleSlider.getValue() + loopFadeLengthInSamples;
+				position = (int) startSampleSlider.getValue() + loopFadeLengthInSamples;
 		}
 
 		retainedCurrentBuffer->position = position;
@@ -178,14 +178,14 @@ void TapeDeck::paint (Graphics& g)
 
 void TapeDeck::resized()
 {
-	openButton.setBounds(3 * border + getThumbnailWidth() + buttonWidth, border, buttonWidth, buttonWidth);
-	playButton.setBounds(2 * border + getThumbnailWidth(), border, buttonWidth, buttonWidth);
-	stopButton.setBounds(2 * border + getThumbnailWidth(), 2 * border + buttonWidth, buttonWidth, buttonWidth);
-	clearButton.setBounds(3 * border + getThumbnailWidth() + buttonWidth, 2 * border + buttonWidth, buttonWidth, buttonWidth);
-	startSampleSlider.setBounds(2 * border + getThumbnailWidth(), 3 * border + 2 * buttonWidth, buttonWidth, buttonWidth);
-	endSampleSlider.setBounds(3 * border + getThumbnailWidth() + buttonWidth, 3 * border + 2 * buttonWidth, buttonWidth, buttonWidth);
+	openButton.setBounds(3 * BORDER + getThumbnailWidth() + BUTTON_WIDTH, BORDER, BUTTON_WIDTH, BUTTON_HEIGHT);
+	playButton.setBounds(2 * BORDER + getThumbnailWidth(), BORDER, BUTTON_WIDTH, BUTTON_HEIGHT);
+	stopButton.setBounds(2 * BORDER + getThumbnailWidth(), 2 * BORDER + BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
+	clearButton.setBounds(3 * BORDER + getThumbnailWidth() + BUTTON_WIDTH, 2 * BORDER + BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
+	startSampleSlider.setBounds(2 * BORDER + getThumbnailWidth(), 3 * BORDER + 2 * BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
+	endSampleSlider.setBounds(3 * BORDER + getThumbnailWidth() + BUTTON_WIDTH, 3 * BORDER + 2 * BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
 
-	Rectangle<int> thumbnailBounds(border, border, getWidth() - 4 * border - 2 * buttonWidth, getHeight() - 2 * border);
+	Rectangle<int> thumbnailBounds(BORDER, BORDER, getWidth() - 4 * BORDER - 2 * BUTTON_WIDTH, getHeight() - 2 * BORDER);
 	thumbnail.setBounds(thumbnailBounds);
 	loopBounds.setBounds(thumbnailBounds);
 	positionOverlay.setBounds(thumbnailBounds);
@@ -193,7 +193,7 @@ void TapeDeck::resized()
 
 int TapeDeck::getThumbnailWidth()
 {
-	return getWidth() - 4 * border - 2 * buttonWidth;
+	return getWidth() - 4 * BORDER - 2 * BUTTON_WIDTH;
 }
 
 //==============================================================================
@@ -331,13 +331,13 @@ void TapeDeck::sliderValueChanged(Slider* slider)
 			{
 				auto* bufferToFade = currentFadeBuffer->getAudioSampleBuffer();
 
-				bufferToFade->applyGainRamp(channel, endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples, 1.0f, 0.0f);
+				bufferToFade->applyGainRamp(channel, (int) endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples, 1.0f, 0.0f);
 
 				AudioBuffer<float> fadeIn(2, loopFadeLengthInSamples);
 				fadeIn.copyFrom(channel, 0, *(currentBuffer->getAudioSampleBuffer()), channel, (int)endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples);
 				auto* fadeInPtr = fadeIn.getWritePointer(channel);
 
-				bufferToFade->addFromWithRamp(channel, endSampleSlider.getValue() - loopFadeLengthInSamples, fadeInPtr, loopFadeLengthInSamples, 0.0f, 1.0f);
+				bufferToFade->addFromWithRamp(channel, (int) endSampleSlider.getValue() - loopFadeLengthInSamples, fadeInPtr, loopFadeLengthInSamples, 0.0f, 1.0f);
 			}
 		}
 	}

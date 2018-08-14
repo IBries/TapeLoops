@@ -47,7 +47,7 @@ void Thumbnail::setMessage(Graphics& g, String message)
 {
 	g.fillAll(backgroundColour);
 	g.setColour(foregroundColour);
-	g.drawFittedText(message, getLocalBounds(), Justification::centred, 1.0f);
+	g.drawFittedText(message, getLocalBounds(), Justification::centred, 1, 1.0f);
 }
 
 void Thumbnail::isLoading(bool loading)

@@ -38,7 +38,7 @@ void LoopBounds::clear()
 	startSampleSlider->setValue(0);
 	endSampleSlider->setValue(getWidth());
 	startDrawPosition = 0;
-	endDrawPosition = getWidth();
+	endDrawPosition = (float) getWidth();
 	repaint();
 }
 
@@ -52,7 +52,7 @@ void LoopBounds::sliderValueChanged(Slider* slider)
 
 void LoopBounds::startSampleChanged(Slider* slider)
 {
-	startSample = slider->getValue();
+	startSample = (int) slider->getValue();
 	if (startSample >= maxLength)
 		endSampleSlider->setRange(maxLength - 1, maxLength);
 	else
@@ -63,7 +63,7 @@ void LoopBounds::startSampleChanged(Slider* slider)
 
 void LoopBounds::endSampleChanged(Slider* slider)
 {
-	endSample = slider->getValue();
+	endSample = (int) slider->getValue();
 	if (endSample - 1 <= 0)
 		startSampleSlider->setRange(0, 1);
 	else
@@ -82,7 +82,7 @@ void LoopBounds::drawLoopEndIndicator(Graphics& g)
 {
 	g.setColour(Colours::darkblue);
 	if (endDrawPosition >= getWidth() - 1)
-		endDrawPosition = getWidth() - 2;
+		endDrawPosition = (float) getWidth() - 2;
 	g.fillRect(endDrawPosition, 0.0f, 2.0f, (float)getHeight());
 }
 

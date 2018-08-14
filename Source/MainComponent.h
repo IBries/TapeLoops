@@ -31,7 +31,8 @@ public:
 
 //==============================================================================
 private:
-	const int NUM_TAPES = 2;
+	const int NUM_TAPES = 3;
+	const int TAPE_HEIGHT = 240;
 
 	TapeDeck* tapeDecks;
 	AudioBuffer<float>* buffers;
