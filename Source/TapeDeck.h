@@ -17,7 +17,7 @@
 
 //==============================================================================
 class TapeDeck    : public Component,
-					private Thread,
+					public Thread,
 					public Slider::Listener
 {
 public:
@@ -96,10 +96,7 @@ private:
 	const int BUTTON_HEIGHT = 70;
 
 	AudioFormatManager formatManager;
-	//std::unique_ptr<AudioFormatReaderSource> readerSource;
-	AudioFormatReaderSource* readerSource;
 	TransportState state;
-	AudioThumbnailCache thumbnailCache;
 	Thumbnail thumbnail;
 	PositionOverlay positionOverlay;
 	LoopBounds loopBounds;

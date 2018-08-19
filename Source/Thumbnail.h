@@ -20,8 +20,7 @@ class Thumbnail    : public Component,
 {
 public:
     Thumbnail(int sourceSamplesPerThumbnailSample,
-			  AudioFormatManager& formatManager,
-			  AudioThumbnailCache& cache);
+			  AudioFormatManager& formatManager);
     ~Thumbnail();
 
 	void setFile(const File& file);
@@ -38,6 +37,7 @@ private:
 	void thumbnailChanged();
 
 	bool isLoadingFile = false;
+	AudioThumbnailCache thumbnailCache;
 	AudioThumbnail thumbnail;
 	Colour backgroundColour;
 	Colour foregroundColour;

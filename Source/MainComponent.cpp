@@ -12,12 +12,10 @@
 
 MainComponent::MainComponent()
 {
-	tapeDecks = new TapeDeck[NUM_TAPES];
-	buffers = new AudioBuffer<float>[NUM_TAPES];
-
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		addAndMakeVisible(&tapeDecks[tape]);
+		tapeDecks.add(new TapeDeck());
+		addAndMakeVisible(tapeDecks[tape]);
 	}
 
 	setSize(800, TAPE_HEIGHT * NUM_TAPES);
@@ -34,7 +32,7 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 {
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		tapeDecks[tape].prepareToPlay(samplesPerBlockExpected,sampleRate);
+		tapeDecks[tape]->prepareToPlay(samplesPerBlockExpected,sampleRate);
 	}
 }
 
@@ -46,7 +44,7 @@ void MainComponent::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill
 
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		tapeDecks[tape].getNextAudioBlock(bufferToFill);
+		tapeDecks[tape]->getNextAudioBlock(bufferToFill);
 	}
 }
 
@@ -56,7 +54,7 @@ void MainComponent::releaseResources()
 {
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		tapeDecks[tape].releaseResources();
+		tapeDecks[tape]->releaseResources();
 	}
 }
 
@@ -72,6 +70,6 @@ void MainComponent::resized()
 {
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		tapeDecks[tape].setBounds(0, tape * TAPE_HEIGHT, getWidth(), TAPE_HEIGHT);
+		tapeDecks[tape]->setBounds(0, tape * TAPE_HEIGHT, getWidth(), TAPE_HEIGHT);
 	}
 }

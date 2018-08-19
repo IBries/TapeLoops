@@ -14,8 +14,7 @@
 //==============================================================================
 TapeDeck::TapeDeck() :
 	state(Stopped),
-	thumbnailCache(5),
-	thumbnail(512, formatManager, thumbnailCache),
+	thumbnail(512, formatManager),
 	loopBounds(startSampleSlider, endSampleSlider),
 	Thread("Background Thread")
 {
@@ -273,8 +272,6 @@ void TapeDeck::checkForPathToOpen()
 			fadeBuffers.add(newFadeBuffer);
 
 			// Drawing Stuff
-			//std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader.get(), true));
-			AudioFormatReaderSource* newSource(new AudioFormatReaderSource(reader.get(), true));
 			int lengthInSamples = (int)reader->lengthInSamples;
 			positionOverlay.setLengthInSamples(lengthInSamples);
 			loopBounds.setMaxLength(lengthInSamples);
@@ -289,11 +286,6 @@ void TapeDeck::checkForPathToOpen()
 			endSampleSlider.setValue(lengthInSamples);
 			thumbnail.isLoading(false);
 			thumbnail.setFile(file);
-
-			//Memory issue occurs when loading a second file to the same deck at this line.
-			//readerSource.reset(newSource.release());
-			readerSource = newSource;
-			newSource->releaseResources();
 
 			changeState(Stopping);
 		}

@@ -13,9 +13,9 @@
 
 //==============================================================================
 Thumbnail::Thumbnail(int sourceSamplesPerThumbnailSample,
-					 AudioFormatManager& formatManager,
-					 AudioThumbnailCache& cache)
-	: thumbnail(sourceSamplesPerThumbnailSample, formatManager, cache),
+	AudioFormatManager& formatManager)
+	: thumbnailCache(3),
+	  thumbnail(sourceSamplesPerThumbnailSample, formatManager, thumbnailCache),
 	  backgroundColour(189, 92, 11),
 	  foregroundColour(0, 61, 64)
 {
@@ -25,6 +25,7 @@ Thumbnail::Thumbnail(int sourceSamplesPerThumbnailSample,
 
 Thumbnail::~Thumbnail()
 {
+	thumbnailCache.clear();
 }
 
 void Thumbnail::setFile(const File& file)

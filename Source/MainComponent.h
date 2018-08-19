@@ -34,8 +34,7 @@ private:
 	const int NUM_TAPES = 3;
 	const int TAPE_HEIGHT = 240;
 
-	TapeDeck* tapeDecks;
-	AudioBuffer<float>* buffers;
+	OwnedArray<TapeDeck> tapeDecks;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
