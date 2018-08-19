@@ -15,23 +15,26 @@
 //==============================================================================
 /*
 */
-class LoopBounds    : public Component,
-					  public Slider::Listener
+class LoopBounds    : public Component
 {
 public:
-    LoopBounds(Slider &start, Slider &end);
+    LoopBounds();
     ~LoopBounds();
 
     void paint (Graphics&) override;
     void resized() override;
 	void clear();
 
-	void sliderValueChanged(Slider* slider);
 	void setMaxLength(int lengthInSamples);
+	int getMaxLength();
+	void setStartSample(int sample);
+	int getStartSample();
+	void setEndSample(int sample);
+	int getEndSample();
+	void setStartDrawPosition(float pos);
+	void setEndDrawPosition(float pos);
 
 private:
-	void startSampleChanged(Slider* slider);
-	void endSampleChanged(Slider* slider);
 	void drawLoopStartIndicator(Graphics& g);
 	void drawLoopEndIndicator(Graphics& g);
 	void drawFill(Graphics& g);
@@ -41,9 +44,6 @@ private:
 	int endSample;
 	float endDrawPosition;
 	int maxLength;
-
-	Slider* startSampleSlider;
-	Slider* endSampleSlider;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoopBounds)
 };

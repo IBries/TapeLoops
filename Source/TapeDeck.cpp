@@ -10,50 +10,19 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "TapeDeck.h"
+#include "Dimensions.h"
 
 //==============================================================================
 TapeDeck::TapeDeck() :
 	state(Stopped),
 	thumbnail(512, formatManager),
-	loopBounds(startSampleSlider, endSampleSlider),
 	Thread("Background Thread")
 {
-	addAndMakeVisible(openButton);
-	openButton.setButtonText("Open...");
-	openButton.onClick = [this] { openButtonClicked(); };
-
-	addAndMakeVisible(playButton);
-	playButton.setButtonText("Play");
-	playButton.onClick = [this] { playButtonClicked(); };
-	playButton.setColour(TextButton::buttonColourId, Colour(0, 83, 5));
-	playButton.setEnabled(false);
-
-	addAndMakeVisible(stopButton);
-	stopButton.setButtonText("Stop");
-	stopButton.onClick = [this] { stopButtonClicked(); };
-	stopButton.setColour(TextButton::buttonColourId, Colour(105, 3, 0));
-	stopButton.setEnabled(false);
-
-	addAndMakeVisible(clearButton);
-	clearButton.setButtonText("Clear");
-	clearButton.onClick = [this] { clearButtonClicked(); };
-	clearButton.setEnabled(false);
-
-	addAndMakeVisible(startSampleSlider);
-	startSampleSlider.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	startSampleSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-	startSampleSlider.addListener(&loopBounds);
-	startSampleSlider.addListener(this);
-
-	addAndMakeVisible(endSampleSlider);
-	endSampleSlider.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	endSampleSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-	endSampleSlider.addListener(&loopBounds);
-	endSampleSlider.addListener(this);
-
 	addAndMakeVisible(&thumbnail);
 	addAndMakeVisible(&positionOverlay);
 	addAndMakeVisible(&loopBounds);
+
+	addAndMakeVisible(&controls);
 
 	formatManager.registerBasicFormats();
 
@@ -78,12 +47,12 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 
 	if (retainedCurrentBuffer == nullptr)
 	{
-		position = (int) startSampleSlider.getValue();
+		position = controls.getStartSample();
 		return;
 	}
 	else if (state != Playing)
 	{
-		position = (int) startSampleSlider.getValue();
+		position = controls.getStartSample();
 		retainedCurrentBuffer->position = position;
 		return;
 	}
@@ -102,8 +71,8 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 
 		while (outputSamplesRemaining > 0)
 		{
-			if (startSampleSlider.getValue() >= position)
-				position = (int) startSampleSlider.getValue();
+			if (controls.getStartSample() >= position)
+				position = controls.getStartSample();
 
 			auto bufferSamplesRemaining = currentAudioSampleBuffer->getNumSamples() - position;
 			auto samplesThisTime = jmin(outputSamplesRemaining, bufferSamplesRemaining);
@@ -134,8 +103,8 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 			outputSamplesOffset += samplesThisTime;
 			position += samplesThisTime;
 
-			if (position >= endSampleSlider.getValue())
-				position = (int) startSampleSlider.getValue() + loopFadeLengthInSamples;
+			if (position >= controls.getEndSample())
+				position = controls.getStartSample() + LOOP_FADE_LENGTH_IN_SAMPLES;
 		}
 
 		retainedCurrentBuffer->position = position;
@@ -147,7 +116,7 @@ void TapeDeck::getNextAudioBlock(const AudioSourceChannelInfo &bufferToFill)
 
 bool TapeDeck::nearBeginning(int position)
 {
-	if (position <= startSampleSlider.getValue() + (loopFadeLengthInSamples / 2))
+	if (position <= controls.getStartSample() + (LOOP_FADE_LENGTH_IN_SAMPLES / 2))
 	{
 		return true;
 	}
@@ -157,7 +126,7 @@ bool TapeDeck::nearBeginning(int position)
 
 bool TapeDeck::nearEnd(int position)
 {
-	if (position >= endSampleSlider.getValue() - (loopFadeLengthInSamples / 2))
+	if (position >= controls.getEndSample() - (LOOP_FADE_LENGTH_IN_SAMPLES / 2))
 	{
 		return true;
 	}
@@ -172,27 +141,138 @@ void TapeDeck::releaseResources()
 
 void TapeDeck::paint (Graphics& g)
 {
-	g.fillAll(Colour(62, 29, 0));
 }
 
 void TapeDeck::resized()
 {
-	openButton.setBounds(3 * BORDER + getThumbnailWidth() + BUTTON_WIDTH, BORDER, BUTTON_WIDTH, BUTTON_HEIGHT);
-	playButton.setBounds(2 * BORDER + getThumbnailWidth(), BORDER, BUTTON_WIDTH, BUTTON_HEIGHT);
-	stopButton.setBounds(2 * BORDER + getThumbnailWidth(), 2 * BORDER + BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
-	clearButton.setBounds(3 * BORDER + getThumbnailWidth() + BUTTON_WIDTH, 2 * BORDER + BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
-	startSampleSlider.setBounds(2 * BORDER + getThumbnailWidth(), 3 * BORDER + 2 * BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
-	endSampleSlider.setBounds(3 * BORDER + getThumbnailWidth() + BUTTON_WIDTH, 3 * BORDER + 2 * BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT);
+//TODO dynamically draw child components
+}
 
-	Rectangle<int> thumbnailBounds(BORDER, BORDER, getWidth() - 4 * BORDER - 2 * BUTTON_WIDTH, getHeight() - 2 * BORDER);
-	thumbnail.setBounds(thumbnailBounds);
-	loopBounds.setBounds(thumbnailBounds);
-	positionOverlay.setBounds(thumbnailBounds);
+void TapeDeck::buttonClicked(Button* button)
+{
+	if (button == controls.getButtonPtr("Open"))
+		openButtonClicked();
+
+	else if (button == controls.getButtonPtr("Play"))
+		playButtonClicked();
+
+	else if (button == controls.getButtonPtr("Stop"))
+		stopButtonClicked();
+
+	else if (button == controls.getButtonPtr("Clear"))
+		clearButtonClicked();
+}
+
+void TapeDeck::openButtonClicked()
+{
+	FileChooser chooser("Select a Wave file to play...", File(), "*.wav");
+
+	if (chooser.browseForFileToOpen())
+	{
+		auto file = chooser.getResult();
+		auto path = file.getFullPathName();
+		chosenPath.swapWith(path);
+		notify();
+	}
+}
+
+void TapeDeck::playButtonClicked()
+{
+	changeState(Starting);
+}
+
+void TapeDeck::stopButtonClicked()
+{
+	changeState(Stopping);
+}
+
+void TapeDeck::clearButtonClicked()
+{
+	changeState(Stopping);
+	clearCurrentBuffer();
+	clearThumbnail();
+	clearLoopBounds();
+
+	controls.setButtonState("Play", false);
+	controls.setButtonState("Stop", false);
+	controls.setButtonState("Clear", false);
+}
+
+void TapeDeck::startSampleChanged()
+{
+	int startSample = loopBounds.getStartSample();
+	int maxLength = loopBounds.getMaxLength();
+
+	loopBounds.setStartSample(controls.getStartSample());
+
+	if (startSample >= maxLength)
+		controls.setSliderRange("End Sample", maxLength - 1, maxLength);
+	else
+		controls.setSliderRange("End Sample", startSample, maxLength);
+
+	applyCrossFade();
+
+	loopBounds.setStartDrawPosition(calculateDrawPosition(startSample, maxLength, loopBounds.getWidth()));
+	loopBounds.repaint();
+}
+
+void TapeDeck::endSampleChanged()
+{
+	int endSample = loopBounds.getEndSample();
+	int maxLength = loopBounds.getMaxLength();
+
+	if (endSample - 1 <= 0)
+		controls.setSliderRange("Start Sample", 0, 1);
+	else
+		controls.setSliderRange("Start Sample", 0, endSample - 1);
+
+	applyCrossFade();
+
+	loopBounds.setEndDrawPosition(calculateDrawPosition(endSample, maxLength, loopBounds.getWidth()));
+	loopBounds.repaint();
+}
+
+void TapeDeck::applyCrossFade()
+{
+	if (currentFadeBuffer != nullptr)
+	{
+		auto* bufferToFade = currentFadeBuffer->getAudioSampleBuffer();
+
+		for (int channel = 0; channel < bufferToFade->getNumChannels(); channel++)
+		{
+			auto endSample = controls.getEndSample();
+
+			if (endSample - LOOP_FADE_LENGTH_IN_SAMPLES > 0)
+			{
+				bufferToFade->applyGainRamp(channel, endSample - LOOP_FADE_LENGTH_IN_SAMPLES, LOOP_FADE_LENGTH_IN_SAMPLES, 1.0f, 0.0f);
+
+				AudioBuffer<float> fadeIn(2, LOOP_FADE_LENGTH_IN_SAMPLES);
+				fadeIn.copyFrom(channel, 0, *(currentBuffer->getAudioSampleBuffer()), channel, endSample - LOOP_FADE_LENGTH_IN_SAMPLES, LOOP_FADE_LENGTH_IN_SAMPLES);
+				auto* fadeInPtr = fadeIn.getWritePointer(channel);
+
+				bufferToFade->addFromWithRamp(channel, endSample - LOOP_FADE_LENGTH_IN_SAMPLES, fadeInPtr, LOOP_FADE_LENGTH_IN_SAMPLES, 0.0f, 1.0f);
+			}
+		}
+	}
+}
+
+float TapeDeck::calculateDrawPosition(int sample, int lengthInSamples, int width)
+{
+	return (float)sample / (float)lengthInSamples * (float)width;
+}
+
+void TapeDeck::sliderValueChanged(Slider* slider)
+{
+	if (slider == controls.getSliderPtr("Start Sample"))
+		startSampleChanged();
+
+	else if (slider == controls.getSliderPtr("End Sample"))
+		endSampleChanged();
 }
 
 int TapeDeck::getThumbnailWidth()
 {
-	return getWidth() - 4 * BORDER - 2 * BUTTON_WIDTH;
+	return getWidth() - 4 * Dimensions::BORDER - 2 * Dimensions::BUTTON_WIDTH;
 }
 
 //==============================================================================
@@ -207,27 +287,44 @@ void TapeDeck::changeState(TransportState newState)
 		{
 		case Stopped:
 			if (currentBuffer == nullptr)
-				playButton.setEnabled(false);
+				controls.setButtonState("Play", false);
 			else
-				playButton.setEnabled(true);
+				controls.setButtonState("Play", true);
 			break;
 
 		case Starting:
-			playButton.setEnabled(false);
+			controls.setButtonState("Play", false);
 			changeState(Playing);
 			break;
 
 		case Playing:
-			stopButton.setEnabled(true);
+			controls.setButtonState("Stop", true);
 			break;
 
 		case Stopping:
-			stopButton.setEnabled(false);
+			controls.setButtonState("Stop", false);
 			positionOverlay.setPosition(0);
 			changeState(Stopped);
 			break;
 		}
 	}
+}
+
+void TapeDeck::clearCurrentBuffer()
+{
+	currentBuffer = nullptr;
+}
+
+void TapeDeck::clearThumbnail()
+{
+	thumbnail.setFile(File());
+}
+
+void TapeDeck::clearLoopBounds()
+{
+	loopBounds.clear();
+	controls.setSliderValue("Start Sample", 0);
+	controls.setSliderValue("End Sample", getWidth());
 }
 
 //==============================================================================
@@ -277,13 +374,14 @@ void TapeDeck::checkForPathToOpen()
 			loopBounds.setMaxLength(lengthInSamples);
 
 			const MessageManagerLock mmLock;
-			playButton.setEnabled(true);
-			clearButton.setEnabled(true);
-			startSampleSlider.setRange(0, lengthInSamples - 1);
-			endSampleSlider.setRange(1, lengthInSamples);
-			startSampleSlider.setValue(1);
-			startSampleSlider.setValue(0);
-			endSampleSlider.setValue(lengthInSamples);
+
+			controls.setButtonState("Play", true);
+			controls.setButtonState("Clear", true);
+			controls.setSliderRange("Start Sample", 0, lengthInSamples - 1);
+			controls.setSliderValue("Start Sample", 0);
+			controls.setSliderRange("End Sample", 1, lengthInSamples);
+			controls.setSliderValue("End Sample", lengthInSamples);
+
 			thumbnail.isLoading(false);
 			thumbnail.setFile(file);
 
@@ -311,68 +409,4 @@ void TapeDeck::checkForBuffersToFree()
 		if (fadeBuffer->getReferenceCount() == 2)
 			fadeBuffers.remove(i);
 	}
-}
-
-void TapeDeck::sliderValueChanged(Slider* slider)
-{
-	if ((slider == &startSampleSlider || slider == &endSampleSlider) && currentFadeBuffer != nullptr)
-	{
-		for (int channel = 0; channel < currentFadeBuffer->getAudioSampleBuffer()->getNumChannels(); channel++)
-		{
-			if (endSampleSlider.getValue() - loopFadeLengthInSamples > 0)
-			{
-				auto* bufferToFade = currentFadeBuffer->getAudioSampleBuffer();
-
-				bufferToFade->applyGainRamp(channel, (int) endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples, 1.0f, 0.0f);
-
-				AudioBuffer<float> fadeIn(2, loopFadeLengthInSamples);
-				fadeIn.copyFrom(channel, 0, *(currentBuffer->getAudioSampleBuffer()), channel, (int)endSampleSlider.getValue() - loopFadeLengthInSamples, loopFadeLengthInSamples);
-				auto* fadeInPtr = fadeIn.getWritePointer(channel);
-
-				bufferToFade->addFromWithRamp(channel, (int) endSampleSlider.getValue() - loopFadeLengthInSamples, fadeInPtr, loopFadeLengthInSamples, 0.0f, 1.0f);
-			}
-		}
-	}
-}
-
-//==============================================================================
-
-void TapeDeck::openButtonClicked()
-{
-	FileChooser chooser("Select a Wave file to play...", File(), "*.wav");
-
-	if (chooser.browseForFileToOpen())
-	{
-		auto file = chooser.getResult();
-		auto path = file.getFullPathName();
-		chosenPath.swapWith(path);
-		notify();
-	}
-}
-
-//==============================================================================
-
-void TapeDeck::playButtonClicked()
-{
-	changeState(Starting);
-}
-
-//==============================================================================
-
-void TapeDeck::stopButtonClicked()
-{
-	changeState(Stopping);
-}
-
-//==============================================================================
-
-void TapeDeck::clearButtonClicked()
-{
-	changeState(Stopping);
-	playButton.setEnabled(false);
-	stopButton.setEnabled(false);
-	clearButton.setEnabled(false);
-	currentBuffer = nullptr;
-	thumbnail.setFile(File());
-	loopBounds.clear();
 }

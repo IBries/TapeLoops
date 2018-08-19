@@ -12,10 +12,8 @@
 #include "LoopBounds.h"
 
 //==============================================================================
-LoopBounds::LoopBounds(Slider &start, Slider &end)
+LoopBounds::LoopBounds()
 {
-	startSampleSlider = &start;
-	endSampleSlider = &end;
 }
 
 LoopBounds::~LoopBounds()
@@ -35,40 +33,8 @@ void LoopBounds::resized()
 
 void LoopBounds::clear()
 {
-	startSampleSlider->setValue(0);
-	endSampleSlider->setValue(getWidth());
 	startDrawPosition = 0;
 	endDrawPosition = (float) getWidth();
-	repaint();
-}
-
-void LoopBounds::sliderValueChanged(Slider* slider)
-{
-	if (slider == startSampleSlider)
-		startSampleChanged(slider);
-	else if (slider == endSampleSlider)
-		endSampleChanged(slider);
-}
-
-void LoopBounds::startSampleChanged(Slider* slider)
-{
-	startSample = (int) slider->getValue();
-	if (startSample >= maxLength)
-		endSampleSlider->setRange(maxLength - 1, maxLength);
-	else
-		endSampleSlider->setRange(startSample, maxLength);
-	startDrawPosition = (float)startSample / (float)maxLength * (float)getWidth();
-	repaint();
-}
-
-void LoopBounds::endSampleChanged(Slider* slider)
-{
-	endSample = (int) slider->getValue();
-	if (endSample - 1 <= 0)
-		startSampleSlider->setRange(0, 1);
-	else
-		startSampleSlider->setRange(0, endSample - 1);
-	endDrawPosition = (float)endSample / (float)maxLength * (float)getWidth();
 	repaint();
 }
 
@@ -99,4 +65,40 @@ void LoopBounds::drawFill(Graphics& g)
 void LoopBounds::setMaxLength(int lengthInSamples)
 {
 	maxLength = lengthInSamples;
+}
+
+int LoopBounds::getMaxLength()
+{
+	return maxLength;
+}
+
+void LoopBounds::setStartSample(int sample)
+{
+	startSample = sample;
+}
+
+int LoopBounds::getStartSample()
+{
+	return startSample;
+}
+
+void LoopBounds::
+setEndSample(int sample)
+{
+	endSample = sample;
+}
+
+int LoopBounds::getEndSample()
+{
+	return endSample;
+}
+
+void LoopBounds::setStartDrawPosition(float pos)
+{
+	startDrawPosition = pos;
+}
+
+void LoopBounds::setEndDrawPosition(float pos)
+{
+	endDrawPosition = pos;
 }

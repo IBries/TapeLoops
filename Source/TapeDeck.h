@@ -14,10 +14,12 @@
 #include "Thumbnail.h"
 #include "PositionOverlay.h"
 #include "LoopBounds.h"
+#include "TapeControl.h"
 
 //==============================================================================
 class TapeDeck    : public Component,
 					public Thread,
+					public Button::Listener,
 					public Slider::Listener
 {
 public:
@@ -50,6 +52,9 @@ public:
     TapeDeck();
     ~TapeDeck();
 
+	ReferenceCountedBuffer::Ptr currentBuffer;
+	ReferenceCountedBuffer::Ptr currentFadeBuffer;
+
 	void prepareToPlay(int samplesPerBlockExpected, double sampleRate);
 	void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill);
 	void releaseResources();
@@ -57,10 +62,10 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
+	void buttonClicked(Button* button);
+
 	void sliderValueChanged(Slider* slider);
 
-	//==============================================================================
-private:
 	enum TransportState
 	{
 		Stopped,
@@ -68,32 +73,17 @@ private:
 		Playing,
 		Stopping
 	};
+
 	void changeState(TransportState newState);
+	void clearCurrentBuffer();
+	void clearThumbnail();
+	void clearLoopBounds();
 
-	void run() override;
-	void checkForBuffersToFree();
-	void checkForPathToOpen();
+	//==============================================================================
+private:
+	const int LOOP_FADE_LENGTH_IN_SAMPLES = 4410;
 
-	void openButtonClicked();
-	void playButtonClicked();
-	void stopButtonClicked();
-	void clearButtonClicked();
-
-	int getThumbnailWidth();
-
-	bool nearEnd(int position);
-	bool nearBeginning(int position);
-
-	TextButton openButton;
-	TextButton playButton;
-	TextButton stopButton;
-	TextButton clearButton;
-	Slider startSampleSlider;
-	Slider endSampleSlider;
-
-	const int BORDER = 10;
-	const int BUTTON_WIDTH = 100;
-	const int BUTTON_HEIGHT = 70;
+	TapeControl controls;
 
 	AudioFormatManager formatManager;
 	TransportState state;
@@ -102,12 +92,29 @@ private:
 	LoopBounds loopBounds;
 
 	ReferenceCountedArray<ReferenceCountedBuffer> buffers;
-	ReferenceCountedBuffer::Ptr currentBuffer;
 	String chosenPath;
 
 	ReferenceCountedArray<ReferenceCountedBuffer> fadeBuffers;
-	ReferenceCountedBuffer::Ptr currentFadeBuffer;
-	int loopFadeLengthInSamples = 4410;
+
+	void run() override;
+	void checkForBuffersToFree();
+	void checkForPathToOpen();
+
+	int getThumbnailWidth();
+
+	bool nearEnd(int position);
+	bool nearBeginning(int position);
+
+	void openButtonClicked();
+	void playButtonClicked();
+	void stopButtonClicked();
+	void clearButtonClicked();
+
+	void startSampleChanged();
+	void endSampleChanged();
+
+	void applyCrossFade();
+	float calculateDrawPosition(int sample, int lengthInSamples, int width);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TapeDeck)
 };
