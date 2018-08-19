@@ -51,17 +51,27 @@ void TapeControl::paint (Graphics& g)
 
 void TapeControl::resized()
 {
-	auto border = Dimensions::BORDER;
-	auto buttonWidth = Dimensions::BUTTON_WIDTH;
-	auto buttonHeight = Dimensions::BUTTON_HEIGHT;
+	auto area = getLocalBounds();
+	auto buttonHeight = (area.getHeight() - (2 * Dimensions::BORDER)) / 3;
 
-	openButton.setBounds(2 * border + buttonWidth, border, buttonWidth, buttonHeight);
-	playButton.setBounds(border, border, buttonWidth, buttonHeight);
-	stopButton.setBounds(border, 2 * border + buttonHeight, buttonWidth, buttonHeight);
-	clearButton.setBounds(2 * border + buttonWidth, 2 * border + buttonHeight, buttonWidth, buttonHeight);
-	startSampleSlider.setBounds(border, 3 * border + 2 * buttonHeight, buttonWidth, buttonHeight);
-	endSampleSlider.setBounds(2 * border + buttonWidth, 3 * border + 2 * buttonHeight, buttonWidth, buttonHeight);
+	auto topRow = area.removeFromTop(buttonHeight);
+	auto buttonWidth = (topRow.getWidth() - Dimensions::BORDER) / 2;
+	startSampleSlider.setBounds(topRow.removeFromLeft(buttonWidth));
+	topRow.removeFromLeft(Dimensions::BORDER);
+	endSampleSlider.setBounds(topRow);
 
+	area.removeFromTop(Dimensions::BORDER);
+
+	auto midRow = area.removeFromTop(buttonHeight);
+	openButton.setBounds(midRow.removeFromLeft(buttonWidth));
+	midRow.removeFromLeft(Dimensions::BORDER);
+	clearButton.setBounds(midRow);
+
+	area.removeFromTop(Dimensions::BORDER);
+
+	playButton.setBounds(area.removeFromLeft(buttonWidth));
+	area.removeFromLeft(Dimensions::BORDER);
+	stopButton.setBounds(area);
 }
 
 //==============================================================================
@@ -79,6 +89,15 @@ void TapeControl::setButtonState(String button, bool state)
 	
 	else if (button.equalsIgnoreCase("Clear"))
 		clearButton.setEnabled(state);
+}
+
+void TapeControl::setSliderState(String slider, bool state)
+{
+	if (slider.equalsIgnoreCase("Start Sample"))
+		startSampleSlider.setEnabled(state);
+
+	else if (slider.equalsIgnoreCase("End Sample"))
+		endSampleSlider.setEnabled(state);
 }
 
 void TapeControl::setSliderRange(String slider, int min, int max)

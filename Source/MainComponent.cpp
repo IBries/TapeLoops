@@ -7,6 +7,7 @@
 */
 
 #include "MainComponent.h"
+#include "Dimensions.h"
 
 //==============================================================================
 
@@ -18,7 +19,7 @@ MainComponent::MainComponent()
 		addAndMakeVisible(tapeDecks[tape]);
 	}
 
-	setSize(800, TAPE_HEIGHT * NUM_TAPES);
+	setSize(800, 700);
 	setAudioChannels(0, 2);
 }
 
@@ -62,14 +63,21 @@ void MainComponent::releaseResources()
 
 void MainComponent::paint (Graphics& g)
 {
+	g.fillAll(Colour(86, 32, 1));
 }
 
 //==============================================================================
 
 void MainComponent::resized()
 {
+	auto area = getLocalBounds();
+	area.reduce(Dimensions::BORDER, Dimensions::BORDER);
+
+	auto tapeHeight = (area.getHeight() - ((NUM_TAPES - 1) * Dimensions::BORDER)) / 3;
 	for (int tape = 0; tape < NUM_TAPES; tape++)
 	{
-		tapeDecks[tape]->setBounds(0, tape * TAPE_HEIGHT, getWidth(), TAPE_HEIGHT);
+		tapeDecks[tape]->setBounds(area.removeFromTop(tapeHeight));
+		if (tape != NUM_TAPES - 1)
+			area.removeFromTop(Dimensions::BORDER);
 	}
 }

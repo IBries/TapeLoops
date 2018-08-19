@@ -23,6 +23,7 @@ TapeDeck::TapeDeck() :
 	addAndMakeVisible(&loopBounds);
 
 	addAndMakeVisible(&controls);
+	connectControls();
 
 	formatManager.registerBasicFormats();
 
@@ -134,6 +135,16 @@ bool TapeDeck::nearEnd(int position)
 	return false;
 }
 
+void TapeDeck::connectControls()
+{
+	controls.getButtonPtr("Play")->addListener(this);
+	controls.getButtonPtr("Open")->addListener(this);
+	controls.getButtonPtr("Stop")->addListener(this);
+	controls.getButtonPtr("Clear")->addListener(this);
+	controls.getSliderPtr("Start Sample")->addListener(this);
+	controls.getSliderPtr("End Sample")->addListener(this);
+}
+
 void TapeDeck::releaseResources()
 {
 
@@ -145,7 +156,13 @@ void TapeDeck::paint (Graphics& g)
 
 void TapeDeck::resized()
 {
-//TODO dynamically draw child components
+	auto area = getLocalBounds();
+	auto thumbnailArea = area.removeFromLeft((int) (area.getWidth() * 0.7));
+	thumbnail.setBounds(thumbnailArea);
+	positionOverlay.setBounds(thumbnailArea);
+	loopBounds.setBounds(thumbnailArea);
+	area.removeFromLeft(Dimensions::BORDER);
+	controls.setBounds(area);
 }
 
 void TapeDeck::buttonClicked(Button* button)
@@ -268,11 +285,6 @@ void TapeDeck::sliderValueChanged(Slider* slider)
 
 	else if (slider == controls.getSliderPtr("End Sample"))
 		endSampleChanged();
-}
-
-int TapeDeck::getThumbnailWidth()
-{
-	return getWidth() - 4 * Dimensions::BORDER - 2 * Dimensions::BUTTON_WIDTH;
 }
 
 //==============================================================================

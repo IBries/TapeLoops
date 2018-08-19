@@ -32,7 +32,6 @@ public:
 //==============================================================================
 private:
 	const int NUM_TAPES = 3;
-	const int TAPE_HEIGHT = 240;
 
 	OwnedArray<TapeDeck> tapeDecks;
 

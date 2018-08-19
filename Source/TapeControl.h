@@ -25,6 +25,7 @@ public:
     void resized() override;
 
 	void setButtonState(String button, bool state);
+	void setSliderState(String slider, bool state);
 	void setSliderRange(String slider, int min, int max);
 	void setSliderValue(String slider, int val);
 

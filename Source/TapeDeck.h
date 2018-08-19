@@ -100,10 +100,10 @@ private:
 	void checkForBuffersToFree();
 	void checkForPathToOpen();
 
-	int getThumbnailWidth();
-
-	bool nearEnd(int position);
 	bool nearBeginning(int position);
+	bool nearEnd(int position);
+
+	void connectControls();
 
 	void openButtonClicked();
 	void playButtonClicked();
