@@ -1,69 +1,136 @@
-/*
-  ==============================================================================
-
-    This file was auto-generated!
-
-    It contains the basic startup code for a JUCE application.
-
-  ==============================================================================
-*/
+/****************************//**
+ *	@file Main.cpp
+ *	@author Isaac Bries
+ *	@date Created:	8/01/2018
+ *	@date Edited:	8/01/2018
+ *******************************/
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "MainComponent.h"
 
-//==============================================================================
+ /************************************************************//**
+ *	@class TapeLoopsApplication
+ *
+ *	@brief Contains basic startup code for a JUCE application
+
+ *	Does all the boring nitty-gritty things needed to get a
+ *	basic application up and running. Thanks, JUCE.
+ ***************************************************************/
 class TapeLoopsApplication  : public JUCEApplication
 {
 public:
-    //==============================================================================
-    TapeLoopsApplication() {}
+	/****************************//**
+	 *	@brief Default Constructor
+	 *******************************/
+    TapeLoopsApplication()
+	{
+	}
 
-    const String getApplicationName() override       { return ProjectInfo::projectName; }
-    const String getApplicationVersion() override    { return ProjectInfo::versionString; }
-    bool moreThanOneInstanceAllowed() override       { return true; }
+	/****************************************//**
+	 *	@brief Gets the name of the application
+	 *
+	 *	@return the name of the application
+	 ********************************************/
+	const String getApplicationName() override
+	{
+		return ProjectInfo::projectName;
+	}
 
-    //==============================================================================
-    void initialise (const String& commandLine) override
+	/********************************************//**
+	 *	@brief Gets the version of the application
+	 *
+	 *	@return the version of the application
+	 ***********************************************/
+    const String getApplicationVersion() override
+	{
+		return ProjectInfo::versionString;
+	}
+
+	/****************************************************************//**
+	 *	@brief flag for having multiple instances of this application
+	 *
+	 *	@return true
+	 *				if more than one instance is allowed
+	 *			false
+	 *				otherwise
+	 *******************************************************************/
+	bool moreThanOneInstanceAllowed() override
+	{
+		return true;
+	}
+
+	/****************************************************************//**
+	 *	@brief This method is where you should put your application's
+	 *		   initialisation code.
+	 *
+	 *	@param[in]	&commandLine
+	 *					a pointer to the command line arguments
+	 *
+	 *	@return void
+	 *******************************************************************/
+	void initialise (const String& commandLine) override
     {
-        // This method is where you should put your application's initialisation code..
-
         mainWindow.reset (new MainWindow (getApplicationName()));
     }
 
+	/****************************************************//**
+	 *	@brief Add your application's shutdown code here.
+	 *
+	 *	@return void
+	 *******************************************************/
     void shutdown() override
-    {
-        // Add your application's shutdown code here..
-		
-        mainWindow = nullptr; // (deletes our window)
+    {		
+        mainWindow = nullptr;	// deletes our window
     }
 
-    //==============================================================================
+	/********************************************************************//**
+	 *	@brief This is called when the app is being asked to quit: you
+	 *		   can ignore this request and let the app carry on running,
+	 *		   or call quit() to allow the app to close.
+	 *
+	 *	@return void
+	 ***********************************************************************/
     void systemRequestedQuit() override
     {
-        // This is called when the app is being asked to quit: you can ignore this
-        // request and let the app carry on running, or call quit() to allow the app to close.
         quit();
     }
 
+	/********************************************************************//**
+	 *	@brief When another instance of the app is launched while this one
+	 *		   is running, this method is invoked, and the commandLine
+	 *		   parameter tells you what the other instance's command-line
+	 *		   arguments were.
+	 *
+	 *	@param[in]	&commandLine
+	 *					a pointer to the command line arguments
+	 *
+	 *	@return void
+	 ***********************************************************************/
     void anotherInstanceStarted (const String& commandLine) override
     {
-        // When another instance of the app is launched while this one is running,
-        // this method is invoked, and the commandLine parameter tells you what
-        // the other instance's command-line arguments were.
     }
 
-    //==============================================================================
-    /*
-        This class implements the desktop window that contains an instance of
-        our MainComponent class.
-    */
+    /************************************************************************//**
+	 *	@class MainWindow
+	 *
+	 *	@brief Implements the application window
+	 *
+     *  This class implements the desktop window that contains an instance of
+     *  our MainComponent class.
+     ***************************************************************************/
     class MainWindow    : public DocumentWindow
     {
     public:
-        MainWindow (String name)  : DocumentWindow (name,
-                                                    Desktop::getInstance().getDefaultLookAndFeel()
-                                                                          .findColour (ResizableWindow::backgroundColourId),
-                                                    DocumentWindow::allButtons)
+		/****************************************//**
+		 *	@brief	Default Constructor
+		 *
+		 *	@param[in] name
+		 *			   the name of the application
+		 *******************************************/
+        MainWindow (String name)  :
+			DocumentWindow (name,
+							Desktop::getInstance().getDefaultLookAndFeel().findColour(ResizableWindow::backgroundColourId),
+							DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
             setContentOwned (new MainComponent(), true);
@@ -73,11 +140,15 @@ public:
             setVisible (true);
         }
 
+		/********************************************************************//**
+		 *	@brief	This is called when the user tries to close this window.
+		 *			Here, we'll just ask the app to quit when this happens, but	*
+		 *			you can change this to do whatever you need.
+		 *
+		 *	@return void
+		 ***********************************************************************/
         void closeButtonPressed() override
-        {
-            // This is called when the user tries to close this window. Here, we'll just
-            // ask the app to quit when this happens, but you can change this to do
-            // whatever you need.
+		{
             JUCEApplication::getInstance()->systemRequestedQuit();
         }
 
@@ -93,9 +164,8 @@ public:
     };
 
 private:
-    std::unique_ptr<MainWindow> mainWindow;
+    std::unique_ptr<MainWindow> mainWindow;		///< Scoped pointer to our Main Window
 };
 
-//==============================================================================
 // This macro generates the main() routine that launches the app.
 START_JUCE_APPLICATION (TapeLoopsApplication)
